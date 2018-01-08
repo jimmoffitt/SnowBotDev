@@ -4,7 +4,7 @@
 
 + [Introduction](#intro)
 + [Getting started](#getting-started)
-  + [Helper scripts](#helper-scripts) 
+  + [Helper scripts](#helper-scripts)
 + [Building webhook consumer](#webhook-consumer)
   + [Standing up web app](#standing-up)
   + [Deploying web app](#deploying)
@@ -24,14 +24,14 @@
 
 
 ## Introduction <a id="intro" class="tall">&nbsp;</a>
-The purpose of this tutorial is to help developers get started with the Twitter Account Activity (AA) and Direct Message (DM) APIs. These APIs are used to build Twitter Direct Message *bots*, automated systems that respond to incoming Direct Messages. These automated communication tools can be designed to provide information, entertain, and engage in private conversations. To learn more about how bots have become common on the Twitter platfrom, see [HERE](https://marketing.twitter.com/na/en/insights/from-tvs-to-beertails-how-chatbots-help-brands-engage-consumers-on-twitter.html). 
+The purpose of this tutorial is to help developers get started with the Twitter Account Activity (AA) and Direct Message (DM) APIs. These APIs are used to build Twitter Direct Message *bots*, automated systems that respond to incoming Direct Messages. These automated communication tools can be designed to provide information, entertain, and engage in private conversations. To learn more about how bots have become common on the Twitter platform, see [HERE](https://marketing.twitter.com/na/en/insights/from-tvs-to-beertails-how-chatbots-help-brands-engage-consumers-on-twitter.html).
 
-These systems receive Account Activity webhook events from Twitter, process the received messages, and respond to the requester via the Direct Message API. 
+These systems receive Account Activity webhook events from Twitter, process the received messages, and respond to the requester via the Direct Message API.
 
-+ By integrating the Account Activity (AA) API you are developing a consumer of webhook events sent from Twitter. 
-+ By integrating the Direct Message (DM) API, you are building the private communication channel for your bot and its users. 
++ By integrating the Account Activity (AA) API you are developing a consumer of webhook events sent from Twitter.
++ By integrating the Direct Message (DM) API, you are building the private communication channel for your bot and its users.
 
-For this tutorial, we are going to build a *SnowBot*, a Twitter-based gateway for all kinds of snow-related information. With the SnowBot you can request weather and snow reports, look at snow photographs, find resources for deeper snow research, and get music playlists with weather and geographical themes. 
+For this tutorial, we are going to build a *SnowBot*, a Twitter-based gateway for all kinds of snow-related information. With the SnowBot you can request weather and snow reports, look at snow photographs, find resources for deeper snow research, and get music playlists with weather and geographical themes.
 
 ---------------------
  ####  *If you want to check out the bot, send a Direct Message to [@SnowBotDev](https://twitter.com/messages/compose?recipient_id=906948460078698496)...*
@@ -40,9 +40,9 @@ For this tutorial, we are going to build a *SnowBot*, a Twitter-based gateway fo
 This example bot has the following features:
 
 * Serves a curated set of resources, such as media and URLs.
-  * Serves snow photos. Demonstrates how to send attachments with Direct Messages. 
-  * Serves URL links: 
-    * Links to third-party snow research and information web sites. Demonstrates how to present links to external resources via Quick Replies. 
+  * Serves snow photos. Demonstrates how to send attachments with Direct Messages.
+  * Serves URL links:
+    * Links to third-party snow research and information web sites. Demonstrates how to present links to external resources via [Quick Replies](https://developer.twitter.com/en/docs/direct-messages/quick-replies).
     * Links to Spotify playlists with snow and weather themes.
 * Integrates third-party APIs:
   * Provides weather data for user-requested location. Data is retrieved using a WeatherUnderground API.
@@ -51,51 +51,51 @@ This example bot has the following features:
 
 ![](https://github.com/jimmoffitt/SnowBotDev/blob/master/docs/screenshots/snowbot_features.jpg)
 
-A fundamental component of any chatbot system is a webapp that reacts to Twitter webhooks and manages 'business' logic for reacting to incoming messages. The material below is organized in several sections including tips on getting started with these APIs and overviews of implementing these bot features. 
+A fundamental component of any chatbot system is a webapp that reacts to Twitter webhooks and manages 'business' logic for reacting to incoming messages. The material below is organized in several sections including tips on getting started with these APIs and overviews of implementing these bot features.
 
-While much of the narrative is language-agnostic, this material includes many code snippets written in Ruby. Since these code examples are very short and have comments, we will provide them as pseudo-code. Pseudo-code that hopefully illustrates fundamental concepts that are readily implemented in non-Ruby languages.
+While much of the narrative is language-agnostic, this material includes many code snippets written in Ruby. Since these code examples are very short and have comments, they are provided as pseudo-code to illustrate fundamental concepts that are readily implemented in non-Ruby languages.
 
 We'll start off with a how to get started with these APIs.
 
 ## Getting started <a id="getting-started" class="tall">&nbsp;</a>
 
-First off, if you haven't reviewed the Direct Message and Account Activity API documentation, that's the place to start. 
+First off, if you haven't reviewed the Direct Message and Account Activity API documentation, that's the place to start.
 
 + [Direct Message API](https://developer.twitter.com/en/docs/direct-messages/api-features)
 + [Account Activity API](https://developer.twitter.com/en/docs/accounts-and-users/subscribe-account-activity/overview)
 
-If you are new to building bots with these APIs, please check out our [Accounty Activity Playbook](). 
+If you are new to building bots with these APIs, please check out our [Account Activity Playbook]().
 
-As described in detail [HERE](https://developer.twitter.com/en/docs/accounts-and-users/subscribe-account-activity/guides/getting-started-with-webhooks), there are several steps of getting started with developing Twitter chatbots: 
+As described in detail [HERE](https://developer.twitter.com/en/docs/accounts-and-users/subscribe-account-activity/guides/getting-started-with-webhooks), there are several steps of getting started with developing Twitter chatbots:
 
-* Create Twitter app and generate access keys to use when authenticating Twitter Direct Message and Account Activity API requests.
-* Get API access. Have your Twitter app enabled with the Account Activity API. For now, you'll need to apply for Account Activity API access [HERE](https://developer.twitter.com/en/apply-for-access).
+* Create a Twitter app and generate access keys to use when authenticating Twitter Direct Message and Account Activity API requests.
+* Have your Twitter app enabled with the Account Activity API. For now, you'll need to apply for Account Activity API access [HERE](https://developer.twitter.com/en/apply-for-access). Make sure that you include your application ID and to clearly describe your use case when applying.
 * Develop webhook consumer app and set up webhooks
    * Determine client-side URL to receive webhook events.
-   * Develop a webhook consumer. 
-      * Handle CRC challenges from Twitter. 
+   * Develop a webhook consumer.
+      * Handle CRC challenges from Twitter.
       * Receive webhook events from Twitter.
 * Design and deploy default Welcome Message.
- 
+
 ### Helper scripts <a id="helper-scripts" class="tall">&nbsp;</a>
 
-As you develop your chatbot, you'll need to set-up the Account Activity plumbing, and design and generate Direct Messages. Much of these actions can be thought of as one-time set-up tasks, but they are actions you'll likely take again as your chatbot evolves. 
+As you develop your chatbot, you'll need to set-up the Account Activity plumbing, and design and generate Direct Messages. Much of these actions can be thought of as one-time setup tasks, but they are actions you'll likely take again as your chatbot evolves.
 
-* See [this script](https://github.com/jimmoffitt/SnowBotDev/blob/master/scripts/setup_webhooks.rb) to help with setting up your Accounty Activity access.
-* See [this script](https://github.com/jimmoffitt/SnowBotDev/blob/master/scripts/setup_welcome_messages.rb) to help with managing your Welcome Messages. "As a AA API client, I need to a tool to update my default Welcome Message. I need to set one up to get started, and also will update it as my bot evolves and add new features." 
+* See [this script](https://github.com/jimmoffitt/SnowBotDev/blob/master/scripts/setup_webhooks.rb) to help with setting up your Account Activity access.
+* See [this script](https://github.com/jimmoffitt/SnowBotDev/blob/master/scripts/setup_welcome_messages.rb) to help with managing your Welcome Messages. "As an AA API client, I need a tool to update my default Welcome Message. I need to set one up to get started, and also will update it as my bot evolves and add new features."
 
 ## Building webhook consumer <a id="webhook-consumer" class="tall">&nbsp;</a>
 
-At the highest level, there are two main components of a Twitter chatbot: Twitter Accounty Activity API and the webhook events it sends, and the client-side web app that receives these events and responds with Direct Messages. This section will outline what that web app looks like when using the Ruby/sinatra framework.
+At the highest level, there are two main components of a Twitter chatbot: Twitter Account Activity API and the webhook events it sends, and the client-side web app that receives these events and responds with Direct Messages. This section will outline what that web app looks like when using the Ruby/Sinatra framework.
 
 If you haven't already, subscribe your consumer web app using the Account Activity API.
 
-### Standing up web app <a id="standing-up" class="tall">&nbsp;</a> 
+### Standing up web app <a id="standing-up" class="tall">&nbsp;</a>
 https://snowbotdev.herokuapp.com/
 
-To build out the client-side of a Twitter chatbot, you need to deploy a web app with an endpoint to handle incoming webhook events. For this project, the ```https://snowbotdev.herokuapp.com/snowbot``` endpoint was registered with Twitter using the Account Activity API: 
+To build out the client-side of a Twitter chatbot, you need to deploy a web app with an endpoint to handle incoming webhook events. For this project, the ```https://snowbotdev.herokuapp.com/snowbot``` endpoint was registered with Twitter using the Account Activity API:
 
-+ Twitter will POST all Account Activity webhook events to: https://snowbotdev.herokuapp.com/snowbot. The event will come in the form of a JSON object. 
++ Twitter will POST all Account Activity webhook events to: https://snowbotdev.herokuapp.com/snowbot. The event will come in the form of a JSON object.
 + Twitter will also make a GET request to the https://snowbotdev.herokuapp.com/snowbot endpoint when sends a Challenge Response Check (CRC) event.
 
 These two routes are required, and you also have the option to a web app home page as well. When building a Sinatra app, this means building a *controller* that is mapped to the https://snowbotdev.herokuapp.com/snowbot endpoint with these methods:
@@ -110,32 +110,35 @@ class SnowBotApp < Sinatra::Base
  end
 
  //Add routes, methods, etc.
- 
- get '/' do # Provide chatbot home page.
+
+ get '/' do
+ # Provide chatbot home page.
  end
-   
- post '/snowbot' do # Receive webhook events. Data body consists of a JSON object describing event.
+
+ post '/snowbot' do
+ # Receive webhook events. Data body consists of a JSON object describing event.
  end
-   
- get '/snowbot' do # Respond to CRC event.
+
+ get '/snowbot' do
+ # Respond to CRC event.
  end
 
 end
 
 ```
 
-### Deploying web app <a id="deploying" class="tall">&nbsp;</a> 
+### Deploying web app <a id="deploying" class="tall">&nbsp;</a>
 
-While this example chatbot was developed, it was deployed in two places: a cloud-based server and a local laptop server environment. 
+While this example chatbot was developed, it was deployed in two places: a cloud-based server and a local laptop server environment.
 
-The cloud-based host was the easiest server to stand up, and there are many services that provide the remote server. For this tutorial, the SnowBot was deployed on Heroku. The Heroku web app was synched with the Snowbotdev github repository, and deploying code updates is painless. Authentication details and app options are set in the web app's Settings. 
+The cloud-based host was the easiest server to stand up, and there are many services that provide the remote server. For this tutorial, the SnowBot was deployed on Heroku. The Heroku web app was synched with the Snowbotdev github repository, and deploying code updates is painless. Authentication details and app options are set in the web app's Settings.
 
-The local laptop environment was where the first deployment occurred and it had more complicated *network* details to work out. The complication was enabling the Twitter webhook events to post events to a laptop's private server. This hurdle was cleared by using a port forwarding ('tunneling') service that provides a public URL associated with your private server. 
+The local laptop environment was where the first deployment occurred and it had more complicated *network* details to work out. The complication was enabling the Twitter webhook events to post events to a laptop's private server. This hurdle was cleared by using a port forwarding ('tunnelling') service that provides a public URL associated with your private server.
 
-For this project, ngrok was used for initial API testing and development. The free version serves up a new URL everytime, which is OK when making initial API requests, but becomes a pain when you move on to chatbot design. If you are willing to pay a small fee, then you can specify a static custom URL. The free Pagekite service was also tried. With Pagekite, the CRC always failed due to latency, which may have been user error.  
+For this project, ngrok was used for initial API testing and development. The free version serves up a new URL every time, which is OK when making initial API requests, but becomes a pain when you move on to chatbot design. If you are willing to pay a small fee, then you can specify a static custom URL. The free Pagekite service was also tried. With Pagekite, the CRC always failed due to latency, which may have been user error.  
 
 
-### Receiving webhook events <a id="receiving-events" class="tall">&nbsp;</a> 
+### Receiving webhook events <a id="receiving-events" class="tall">&nbsp;</a>
 
 For the SnowBot, the https://snowbotdev.herokuapp.com/snowbot URL was registered as where Twitter should send webhook events. When Twitter sends webhook events, it makes a POST request to that endpoint and sends the event encoded as JSON. The controller ```post /snowbot``` method passes that JSON content to an *event manager*.
 
@@ -150,9 +153,9 @@ For the SnowBot, the https://snowbotdev.herokuapp.com/snowbot URL was registered
   end
 ```
 
-### Handling CRC events <a id="handling-crc" class="tall">&nbsp;</a> 
+### Handling CRC events <a id="handling-crc" class="tall">&nbsp;</a>
 
-When Twitter sends a CRC event, it makes a GET request to the registered endpoint along with a ```crc_token``` request parameter. The controller ```get /snowbot``` method takes that token, encodes that token with the client-side *consumer secret*, and responds with that result to Twitter. 
+When Twitter sends a CRC event, it makes a GET request to the registered endpoint along with a ```crc_token``` request parameter. The controller ```get /snowbot``` method takes that token, encodes that token with the client-side *consumer secret*, and responds with that result to Twitter.
 
 ```
   get '/snowbot' do
@@ -182,7 +185,7 @@ One of the first steps when deploying a chatbot is using the Direct Message API 
 That script references the ```SnowBotDev/app/helpers/generate_direct_message_content.rb``` Snow Bot class, which a few methods for generating the Welcome Message JSON that is sent as a POST request to the direct_messages/welcome_messages/new endpoint:
 
 The ```build_custom_options``` method builds an ```options``` array with label/description/metadata attributes for each custom chatbot option.
- 
+
  ```
  def build_custom_options
 
@@ -223,7 +226,7 @@ The ```build_custom_options``` method builds an ```options``` array with label/d
 end
 ```
 
-The ```build_default_options``` method builds an ```options``` array with label/description/metadata attributes for each a set of default options that are added to the end of the custom options. The idea here is that regardless of the custom options a chatbot may have, there will always be a set of default options tacked on. 
+The ```build_default_options``` method builds an ```options``` array with label/description/metadata attributes for each a set of default options that are added to the end of the custom options. The idea here is that regardless of the custom options a chatbot may have, there will always be a set of default options tacked on.
 
 ```
 def build_default_options
@@ -278,11 +281,11 @@ end
 ```
 ![](https://github.com/jimmoffitt/SnowBotDev/blob/master/docs/screenshots/welcome_message.jpg)
 
-## Managing events <a id="managing" class="tall">&nbsp;</a> 
+## Managing events <a id="managing" class="tall">&nbsp;</a>
 
 Chatbots are driven by real-time communication events. The SnowBot receives Twitter Account Activity webhook events and responds with Direct Messages.     
 
-The SnowBot (sinatra) controller has a ```post '/snowbot'``` route that passes the incoming webhook event JSON to a ```EventManager``` helper class and its ```handle_event``` method. Here's how that route is implemented:
+The SnowBot (Sinatra) controller has a ```post '/snowbot'``` route that passes the incoming webhook event JSON to a ```EventManager``` helper class and its ```handle_event``` method. Here's how that route is implemented:
 
 ```
   # Receives Account Activity API webhook events.
@@ -299,11 +302,11 @@ The entire app controller code is at [SnowBotDev/app/controllers/snow_bot_dev_ap
 
 We'll split the event management discussion into three parts:
 
-+ Handling webhook events - Processing incoming Accunt Activity API webhook events.
-+ Managing Quick Replies - Serving user content with Direct Messages API.
-+ Bot commands - The SnowBot was designed to work mainly with specific commands. 
++ Handling webhook events - Processing incoming Account Activity API webhook events.
++ Managing Quick Replies - Serving user content with Direct Message API.
++ Bot commands - The SnowBot was designed to work mainly with specific commands.
 
-### Handing webhook events <a id="managing-webhooks" class="tall">&nbsp;</a> 
+### Handing webhook events <a id="managing-webhooks" class="tall">&nbsp;</a>
 
 The ```EventManager``` class is implemented in ```SnowBotDev/app/helpers/event_manager.rb```. The ```handle_event``` method examines the incoming (Direct Message) event and determines whether it is a Quick Reply response or a bot command.
 
@@ -332,9 +335,9 @@ def handle_event(events)
 end
 ```
 
-### Managing Quick Replies <a id="managing-qrs" class="tall">&nbsp;</a> 
+### Managing Quick Replies <a id="managing-qrs" class="tall">&nbsp;</a>
 
-If the event manager is handling a Quick Reply response, the ```handle_quick_reply``` method parses both the user ID of who is responding, and the ```metadata``` associated with the Quick Reply the user is responding to. The code below illustrates how a user request for seeing a help menu is handled. 
+If the event manager is handling a Quick Reply response, the ```handle_quick_reply``` method parses both the user ID of who is responding, and the ```metadata``` associated with the Quick Reply the user is responding to. The code below illustrates how a user request for seeing a help menu is handled.
 
 When creating Quick Replies, the 'metadata' attribute assigned to it comes back with the Quick Reply response. This 'metadata' attribute enables you to know what Quick Reply is being responded to and react accordingly.
 
@@ -344,20 +347,20 @@ def handle_quick_reply(dm_event)
   response_metadata = dm_event['message_create']['message_data']['quick_reply_response']['metadata']
   user_id = dm_event['message_create']['sender_id']
 
-  # Handle all types of response_metadata here. 
+  # Handle all types of response_metadata here.
   if response_metadata == 'help'
     @DMSender.send_system_help(user_id)
-  end	
+  end
 
 end
-  
-```
-  
-### Handling bot commands <a id="managing-commands" class="tall">&nbsp;</a> 
- 
-If the incoming Direct Message is not a Quick Reply response, the message text (and user ID) is parsed to see of the Direct Message comtains a support bot command. In the code below, we are looking for supported commands that trigger the response of sending the bot's Welcome Message. 
 
-All non-Quick Reply responses are routed to this method. So, this is where you can get fancy with message parsing and building responses. This implementation is simplistic, and only looks for supported commands if the incoming message text is 12 characters or less. If longer than 12 characters, no response is attempted. 
+```
+
+### Handling bot commands <a id="managing-commands" class="tall">&nbsp;</a>
+
+If the incoming Direct Message is not a Quick Reply response, the message text (and user ID) is parsed to see of the Direct Message contains a support bot command. In the code below, we are looking for supported commands that trigger the response of sending the bot's Welcome Message.
+
+All non-Quick Reply responses are routed to this method. So, this is where you can get fancy with message parsing and building responses. This implementation is simplistic, and only looks for supported commands if the incoming message text is 12 characters or less. If longer than 12 characters, no response is attempted.
 
 ```
 	def handle_command(dm_event)
@@ -374,17 +377,17 @@ end
 
 ```
 
-## Adding bot functionality <a id="functionality" class="tall">&nbsp;</a> 
+## Adding bot functionality <a id="functionality" class="tall">&nbsp;</a>
 
-### Basic menu navigation <a id="navigation" class="tall">&nbsp;</a> 
+### Basic menu navigation <a id="navigation" class="tall">&nbsp;</a>
 
-The SnowBot is the third of a line of chatbot examples. About the only thing in common, code and menu wise, is that there are a set of navigation options that are typically tacked onto the end of a set of Quick Reply options. These navigation helpers can include things like 'back', 'home', 'about' and 'help' options. Regardless of a chatbot's focus, these are helpful, and generic, features that any chatbot can benefit from: 
+The SnowBot is the third of a line of chatbot examples. About the only thing in common, code and menu wise, is that there are a set of navigation options that are typically tacked onto the end of a set of Quick Reply options. These navigation helpers can include things like 'back', 'home', 'about' and 'help' options. Regardless of a chatbot's focus, these are helpful, and generic, features that any chatbot can benefit from:
 
 * ⌂ Home - Returns users to the 'top' of the menu options.   
 
-* ⬅ Back - Returns users to the 'parent' option of their current level. For example, you are viewing a snow report, the 'Back' option will return you to the resorts list. 
+* ⬅ Back - Returns users to the 'parent' option of their current level. For example, you are viewing a snow report, the 'Back' option will return you to the resorts list.
 
-* ☔  Help - Returns static text of your choice. With the SnowBot, the 'help' command returns a list of support bot commands. 
+* ☔  Help - Returns static text of your choice. With the SnowBot, the 'help' command returns a list of support bot commands.
 
 * ❓ Learn - Returns static text of your choice. With the SnowBot, the 'learn' command returns a project link, and provides third-party API credits.  
 
@@ -413,7 +416,7 @@ def build_default_options
 	option['label'] = '⌂ Home'
 	option['description'] = 'Go back home'
 	option['metadata'] = "return_home"
-	options << option	
+	options << option
 
 	options
 end
@@ -424,7 +427,7 @@ Here is where the help contents are built: ```generate_system_help(recipient_id)
 ![](https://github.com/jimmoffitt/SnowBotDev/blob/master/docs/screenshots/help.jpg)
 
 
-*Back* buttons require a bit more metadata to implement. *Back* buttons requires context about where they should go to, context on what is the 'parent' location to where the user should be sent. The SnowBot provides *Back* buttons when it is two levels down (first level options don't really need a *Back* button since *Home* takes the user to the top level anyway). So when the SnowBot user is presented  their choice of snow reports, snow research link, or a playlist, a *Back* button is provided to return the user to the corresponding list options. 
+*Back* buttons require a bit more metadata to implement. *Back* buttons require context about where they should go to, the 'parent' location to where the user should be sent. The SnowBot provides *Back* buttons when it is two levels down (first level options don't really need a *Back* button since *Home* takes the user to the top level anyway). So when the SnowBot user is presented with their choice of snow reports, snow research link, or a playlist, a *Back* button is provided to return the user to the corresponding list options.
 
 The needed context is provided with the Quick Reply *metadata* field in the GenerateDirectMessageContent class. When a list option choice is displayed, the *Back* button is added to the options with its *metadata* field set to ```go_back #{type}``` where type is either 'locations', 'links', or 'playlists'.
 
@@ -451,21 +454,21 @@ When the user selects a *Back* button, that event arrives in the EventManager cl
 	end
 ```
 
-### Serving Quick Reply option lists <a id="lists" class="tall">&nbsp;</a> 
+### Serving Quick Reply option lists <a id="lists" class="tall">&nbsp;</a>
 
 The SnowBot serves up several curated lists:
 
 + Resort names for requesting snow reports.
-+ Links to web sites that have a focus on snow research. 
++ Links to web sites that have a focus on snow research.
 + Links to playlists with weather-related themes.
 
-These lists are configured and loaded from the server side. For each list a 'resource' file is looked up, opened, parsed, and assembled into metadata for a Quick Reply option list. For example, when a user wants to request a snow report, they are presented a list of resorts to choose from. The resort names are loaded from a *placesOfInterest.csv* file that is placed in a SnowBotDev/app/config/data/ folder. 
+These lists are configured and loaded from the server side. For each list a 'resource' file is looked up, opened, parsed, and assembled into metadata for a Quick Reply option list. For example, when a user wants to request a snow report, they are presented a list of resorts to choose from. The resort names are loaded from a *placesOfInterest.csv* file that is placed in a SnowBotDev/app/config/data/ folder.
 
-Note that Quick Reply option lists are limited to 20 items, including any navigation options such as *Home* and *Back* options. For example, since the list of snow resorts includes a *Home* button, only 19 resorts can be listed. If you have more than twenty options to display, you'll need to split them into multiple option lists. For the SnowBot, we could support more resorts by adding a *More* button that displays the next (up to) 19 resorts. 
+Note that Quick Reply option lists are limited to 20 items, including any navigation options such as *Home* and *Back* options. For example, since the list of snow resorts includes a *Home* button, only 19 resorts can be listed. If you have more than twenty options to display, you'll need to split them into multiple option lists. For the SnowBot, we could support more resorts by adding a *More* button that displays the next (up to) 19 resorts.
 
 The mechanics of loading these resource files is encapsulated in ```SnowBotDev/app/helpers/get_resources.rb```.
 
-The GenerateDirectMessageContent class is responsible for, as its name implies, generating content that is sent via Direct Messages. That class creates a GetResources object, which returns a set of resource arrays. 
+The GenerateDirectMessageContent class is responsible for, as its name implies, generating content that is sent via Direct Messages. That class creates a GetResources object, which returns a set of resource arrays.
 
 ```
 @resources = {}
@@ -476,14 +479,14 @@ The GenerateDirectMessageContent class is responsible for, as its name implies, 
 @resources.links_list
 
 ```
-These resource arrays are loaded from these CSV files: 
+These resource arrays are loaded from these CSV files:
 
 + SnowBotDev/app/config/data/locations/placesOfInterest.csv - Contents: display Name, longitude, latitude, Resort ID
 + SnowBotDev/app/config/data/links/links.csv - Contents: Display summary, URL, site description
   + Note that since link metadata can be long-form with commas, semi-colons are used as the delimiter.
-+ SnowBotDev/app/config/data/music/playlists.csv - Contents: Display name, description, URL 
++ SnowBotDev/app/config/data/music/playlists.csv - Contents: Display name, description, URL
 
-Since these resource files are loaded on-demand when a user request them, you can upload them to your server and they are updated on-the-fly. When the GetResources class loads these files, it will ignore any lines that start with the '#' characters, enabling you to include notes in the resource files.
+Since these resource files are loaded on-demand when a user requests them, you can upload them to your server and they are updated on-the-fly. When the GetResources class loads these files, it will ignore any lines that start with the '#' characters, enabling you to include notes in the resource files.
 
 The SnowBot also loads in a long list of photographs. These are not presented in a list, but instead are served randomly to the user. The GenerateDirectMessageContent accesses the photo list via:
 
@@ -498,22 +501,22 @@ The photo list is loaded from this CSV file:
 
 The actual photos need to be stored here: SnowBotDev/app/config/data/photos/*.jpg.* So to add a new photo, add an entry in the *photos.csv* resource file (with the filename and a description), and drop the photo file in the */photos* folder.
 
-### Adding attachments to Direct Messages <a id="attachments" class="tall">&nbsp;</a> 
+### Adding attachments to Direct Messages <a id="attachments" class="tall">&nbsp;</a>
 
-The SnowBot serves snow-related photographs by ['attaching' media to Direct Messages](https://developer.twitter.com/en/docs/direct-messages/message-attachments/guides/attaching-media). As discussed there, sending a Direct Message with media is a two-step process. First the photo or video is [uploaded to the Twitter platform at upload.twitter.com/1.1/media/upload](https://developer.twitter.com/en/docs/media/upload-media/api-reference/post-media-upload-init.html), then a corresponding media numeric ID is included when generating Direct Message JSON.  
+The SnowBot serves snow-related photographs by ['attaching' media to Direct Messages](https://developer.twitter.com/en/docs/direct-messages/message-attachments/guides/attaching-media). As discussed there, sending a Direct Message with media is a two-step process. First the photo or video is [uploaded to the Twitter platform at upload.twitter.com/1.1/media/upload](https://developer.twitter.com/en/docs/media/upload-media/api-reference/post-media-upload-init.html), then a corresponding numeric media ID is included when generating Direct Message JSON.  
 
-Since we did not want to write new code for uploading photographs and generating a media IDs, we looked for a Ruby gem that could abstract away the details. There are many Ruby gems built for the Twitter platform, and the SnowBot integrates [this 'twitter' gem](https://github.com/sferik/twitter). 
+Since we did not want to write new code for uploading photographs and generating media IDs, we looked for a Ruby gem that could abstract away the details. There are many Ruby gems built for the Twitter platform, and the SnowBot integrates [this 'twitter' gem](https://github.com/sferik/twitter).
 
 The 'serving media' details are contained in two places:
 
-+ ```SnowBotDev/app/helpers/twitter_api.rb``` - A wrapper around the *twitter* gem. For the SnowBot, the TwitterAPI class has a single ```get_media_id(media_path)``` method. The class also manages authenticating with the media upload API, loading in your Twitter app tokens. 
++ ```SnowBotDev/app/helpers/twitter_api.rb``` - A wrapper around the *twitter* gem. For the SnowBot, the TwitterAPI class has a single ```get_media_id(media_path)``` method. The class also manages authenticating with the media upload API, loading in your Twitter app tokens.
 + ```SnowBotDev/app/helpers/generate_direct_message_content.rb``` - When a user requests a snow photo, a photo is picked randomly from the list and a media ID is generated by passing the photo path to the TwitterAPI object:
 
 ```
 media_id = @upload_client.upload(File.new(media_path))
 ```
 
-That ID is then sent along with the JSON generated for the Direct Message. 
+That ID is then sent along with the JSON generated for the Direct Message.
 
 
 ```
@@ -525,32 +528,32 @@ event['event']['message_create']['message_data'] = message_data
 return event.to_json
 ```
 
-### Integrating third-party APIs <a id="other-apis" class="tall">&nbsp;</a> 
+### Integrating third-party APIs <a id="other-apis" class="tall">&nbsp;</a>
 
-The SnowBot has two features that are driven by third-party APIs: requesting current weather conditions for a location of interest, and getting snow reports for a list of ski resorts. Integrating third-party APIs was pretty simple. 
+The SnowBot has two features that are driven by third-party APIs: requesting current weather conditions for a location of interest, and getting snow reports for a list of ski resorts. Integrating third-party APIs was pretty straightforward.
 
 For this demo, two APIs were integrated: weather data from [WeatherUnderground.com](https://www.wunderground.com/weather/api/) and snow reports from [SnoCountry.com](http://www.snocountry.com/). WeatherUnderground provides a self-service for generating an API key. For the snow reports I reached out to SnoCountry.com and they were kind enough to provide a key. For both APIs, a simple HTTP GET request is made with the API key passed in as a request parameter.
 
-These authentication keys are loaded in from your execution environment keys. Depending on your development/deploy environment, these can be set in different places. When running from an IDE, these keys can be set in a run/debug configuration. When deploying to a cloud platform, such as Heroku, the keys are set as part of a web app's *settings*. 
+These authentication keys are loaded in from your execution environment keys. Depending on your development/deploy environment, these can be set in different places. When running from an IDE, these keys can be set in a run/debug configuration. When deploying to a cloud platform, such as Heroku, the keys are set as part of a web app's *settings*.
 
 Note that without your own API keys, these bot features will fail with authentication-related errors. The assumption is that you will want to integrate APIs of your interest. To help with that the third-party API details are encapsulated in two places:
 
 + ```SnowBotDev/app/helpers/third_party_request.rb```
-  + Class was written to contain all the details of making these third-party API calls. This class provides two ```get_current_weather``` and ```get_resort_info``` methods. The ```get_current_weather``` method takes a point coordinate (lat and long) and includes that in the call to Weather Underground. The ```get_resort_info``` takes a *resort ID* and submits that to the SnoCountry.com API. 
-  
+  + Class was written to contain all the details of making these third-party API calls. This class provides two ```get_current_weather``` and ```get_resort_info``` methods. The ```get_current_weather``` method takes a point coordinate (lat and long) and includes that in the call to Weather Underground. The ```get_resort_info``` takes a *resort ID* and submits that to the SnoCountry.com API.
+
 + ```SnowBotDev/app/helpers/generate_diect_message_content.rb```
   + When users request weather or snow information, these requests of the thirdparty_api object are made:
     +  ```weather_info = @thirdparty_api.get_current_weather(coordinates[1], coordinates[0])```
     +  ```resort_info = @thirdparty_api.get_resort_info(resort_id)```
-    
-The thirdparty_api object encapsulates the 'pretty' formating of the content coming back from these two APIs. The generate_direct_message_content class, by design, knows nothing of these details and simply sets the  ```message_data['text']``` attribute to what the third party class returns. 
+
+The thirdparty_api object encapsulates the 'pretty' formatting of the content coming back from these two APIs. The generate_direct_message_content class, by design, knows nothing of these details and simply sets the  ```message_data['text']``` attribute to what the third party class returns.
 
 
-## Other tips <a id="tips" class="tall">&nbsp;</a> 
+## Other tips <a id="tips" class="tall">&nbsp;</a>
 
 ### Call to action Tweets
 
-Once your bot is deployed and tested, it's time to help users find it. One way to do that is to post a "call to action" Tweet that contains a "Send a DM" button. To do that, just include the following type of link, referencing the Twitter account ID of the chatbot. Note that these can be posted from any account, so spread the word to colleagues and friends and have them post on your behalf. 
+Once your bot is deployed and tested, it's time to help users find it. One way to do that is to post a "call to action" Tweet that contains a "Send a Direct Message" button. To do that, include the following type of link, referencing the Twitter account ID of the chatbot. Note that these can be posted from any account, so spread the word to colleagues and friends and have them post on your behalf. You'll also need to set the account to "Receive Direct Messages from anyone" in Twitter Settings (under "Privacy and Safety") for this to work well.
 
 ```
 https://twitter.com/messages/compose?recipient_id=906948460078698496
@@ -563,11 +566,10 @@ The SnowBot has such a Tweet pinned to the top of its timeline:
 
 When a SnowBot user requests current weather conditions for a location, they are presented with 'share location' process. Currently, the Direct Message API provides a ['location' type Quick Reply](https://developer.twitter.com/en/docs/direct-messages/quick-replies/api-reference/location). When this type of Quick Reply is presented to a user, they are prompted to share their location by choosing it on a map. When the user selects a location, its long/lat coordinates are returned in the Direct Message event metadata.
 
-Note that in December, 2017, it was announced that the sharing location feature would be deprecated in early 2018. At that time the 'get weather' feature will either be removed, or an alternative method for sharing location will be implemented. 
+Note that in December, 2017, it was announced that the sharing location feature would be deprecated in early 2018. At that time the 'get weather' feature will either be removed, or an alternative method for sharing location will be implemented.
 
-## Next steps <a id="next" class="tall">&nbsp;</a> 
+## Next steps <a id="next" class="tall">&nbsp;</a>
 
 + Review [Account Activity API documentation](https://developer.twitter.com/en/docs/accounts-and-users/subscribe-account-activity/overview).
 + Review [Direct Message API documentation](https://developer.twitter.com/en/docs/direct-messages/api-features).
 + Read the [Account Activity API playbook]().
-
