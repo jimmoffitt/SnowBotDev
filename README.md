@@ -1,3 +1,6 @@
+
+# Note: this repository has been ported to [https://github.com/twitterdev/SnowBotDev](https://github.com/twitterdev/SnowBotDev)
+
 # @SnowBotDev
 Current home of the @SnowBotDev bot, a demo illustrating the Twitter Account Activity and Direct Message APIs. This SnowBot is written in Ruby, uses the Sinatra web app framework, and is deployed on Heroku. 
 
